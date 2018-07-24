@@ -37,6 +37,9 @@ spec:
         args:
           - --housekeeping_interval=10s
           - --port=8899
+          - --storage_driver=influxdb 
+          - --storage_driver_host=influxdb:8086
+          - --storage_driver_db="cadvisor"
       terminationGracePeriodSeconds: 30
       volumes:
       - name: rootfs
