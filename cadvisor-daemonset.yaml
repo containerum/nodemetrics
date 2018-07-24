@@ -1,0 +1,66 @@
+apiVersion: extensions/v1beta1 
+kind: DaemonSet
+metadata:
+  name: cadvisor
+  namespace: kube-system
+  labels:
+    app: cadvisor
+spec:
+  selector:
+    matchLabels:
+      name: cadvisor
+  template:
+    metadata:
+      labels:
+        name: cadvisor
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: cadvisor
+        image: google/cadvisor:latest
+        volumeMounts:
+        - name: rootfs
+          mountPath: /rootfs
+          readOnly: true
+        - name: var-run
+          mountPath: /var/run
+          readOnly: false
+        - name: docker
+          mountPath: /var/lib/docker
+          readOnly: true
+        ports:
+          - name: http
+            containerPort: 8899
+            protocol: TCP
+        args:
+          - --housekeeping_interval=10s
+          - --port=8899
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: rootfs
+        hostPath:
+          path: /
+      - name: var-run
+        hostPath:
+          path: /var/run
+      - name: docker
+        hostPath:
+          path: /var/lib/docker
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: cadvisor
+  namespace: kube-system
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local
+  selector:
+    name: cadvisor
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8899
+    targetPort: 8899
