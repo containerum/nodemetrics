@@ -19,7 +19,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: cadvisor
-        image: google/cadvisor:latest
+        image: google/cadvisor:v0.30.2
         volumeMounts:
         - name: rootfs
           mountPath: /rootfs
@@ -30,6 +30,9 @@ spec:
         - name: docker
           mountPath: /var/lib/docker
           readOnly: true
+        - name: sysfs
+          mountPath: /sys
+          readOnly: true
         ports:
           - name: http
             containerPort: 8899
@@ -39,7 +42,7 @@ spec:
           - --port=8899
           - --storage_driver=influxdb 
           - --storage_driver_host=influxdb:8086
-          - --storage_driver_db="cadvisor"
+          - --storage_driver_db=cadvisor
       terminationGracePeriodSeconds: 30
       volumes:
       - name: rootfs
@@ -51,6 +54,9 @@ spec:
       - name: docker
         hostPath:
           path: /var/lib/docker
+      - name: sysfs
+        hostPath:
+          path: /sys
 ---
 kind: Service
 apiVersion: v1
