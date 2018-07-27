@@ -1,7 +1,20 @@
-[[constraint]]
-  name = "github.com/influxdata/influxdb"
-  version = "1.6.0"
 
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  name = "github.com/influxdata/influxdb"
+  version = "~1.6.0"
+
+[[constraint]]
+  name = "github.com/octago/sflags"
+  version = "~0.2.0"
+
+[[constraint]]
+  name = "github.com/gin-gonic/gin"
+  version = "v1.2.0"
+
+[[constraint]]
+ name = "github.com/sirupsen/logrus"
+ version = "~v1.0.6"
