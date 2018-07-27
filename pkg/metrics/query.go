@@ -25,3 +25,15 @@ func (flux *Influx) SelectFrom(from string, columns ...string) influx.Query {
 	return influx.NewQuery(fmt.Sprintf("SELECT %s FROM %s",
 		strings.Join(columns, ", "), from), flux.dbName, "1") //TODO: fix precision
 }
+
+func (flux *Influx) Query(cmd string, args ...interface{}) ([]influx.Result, error) {
+	q := influx.Query{
+		Command:  fmt.Sprintf(cmd, args...),
+		Database: flux.dbName,
+	}
+	response, err := flux.Client.Query(q)
+	if err != nil {
+		return nil, err
+	}
+	return response.Results, response.Error()
+}
