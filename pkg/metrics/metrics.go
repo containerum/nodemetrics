@@ -1,8 +1,11 @@
 package metrics
 
+import "github.com/containerum/nodeMetrics/pkg/models"
+
 type Metrics interface {
 	CPU
 	Memory
+	Storage
 }
 
 type CPU interface {
@@ -11,4 +14,8 @@ type CPU interface {
 
 type Memory interface {
 	MemoryCurrent() (uint64, error)
+}
+
+type Storage interface {
+	StorageCurrent() (models.StorageCurrent, error)
 }

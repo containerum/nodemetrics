@@ -10,5 +10,5 @@ func TestInflux_CPUCurrent(test *testing.T) {
 	if err != nil {
 		test.Fatal(err)
 	}
-	test.Log(db.MemoryCurrent())
+	test.Log(db.StorageCurrent())
 }

@@ -19,8 +19,9 @@ func main() {
 	var config = Config{
 		ServingAddr: "localhost:8090",
 		Config: service.Config{
-			DB:         "kubernetes",
-			InfluxAddr: "http://localhost:8888",
+			DB:           "kubernetes",
+			InfluxAddr:   "http://localhost:8888",
+			CadvisorAddr: "http://192.168.88.210:31314",
 		},
 	}
 	if err := gflag.ParseToDef(&config); err != nil {
