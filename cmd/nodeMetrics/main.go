@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"os"
 
 	"github.com/containerum/nodeMetrics/pkg/service"
@@ -9,6 +10,7 @@ import (
 )
 
 type Config struct {
+	Help        bool `flag:"help h"`
 	ServingAddr string
 	service.Config
 }
@@ -21,10 +23,16 @@ func main() {
 			InfluxAddr: "http://localhost:8888",
 		},
 	}
-	if _, err := gflag.Parse(&config); err != nil {
+	if err := gflag.ParseToDef(&config); err != nil {
 		panic(err)
 	}
-	var service, err = service.NewService(config.Config)
+	flag.Parse()
+	if config.Help {
+		flag.Usage()
+		return
+	}
+
+	service, err := service.NewService(config.Config)
 	if err != nil {
 		logrus.WithError(err).Errorf("unable to start service")
 		os.Exit(1)
