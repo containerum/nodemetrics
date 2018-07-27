@@ -1,9 +1,9 @@
-package metrics
+package influx
 
 import "testing"
 
 func TestInflux_CPUCurrent(test *testing.T) {
-	var db, err = NewInflux(InfluxConfig{
+	var db, err = NewInflux(Config{
 		Database: "kubernetes",
 		Addr:     "http://localhost:8888",
 	})

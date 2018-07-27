@@ -14,10 +14,6 @@ var (
 	_ metrics.Metrics = new(Influx)
 )
 
-const (
-	CPU_MEASUREMENTS = "cpu"
-)
-
 type Influx struct {
 	dbName string
 	influx.Client
@@ -45,50 +41,59 @@ func NewInflux(config Config) (*Influx, error) {
 	}, nil
 }
 
-func (flux *Influx) CPULastN(n uint, series metrics.SeriesConfig) (vector.Vec, error) {
-	var resp, err = flux.Query(
-		influx.NewQuery(
-			fmt.Sprintf("SELECT value FROM %s ORDER BY time DESC LIMIT %d", CPU_MEASUREMENTS, n),
-			flux.dbName,
-			"",
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-	row := resp.Results[0].Series[0]
-	ret := vector.MakeVec(len(row.Values), func(index int) float64 {
-		f, err := row.Values[index][1].(json.Number).Float64()
-		if err != nil {
-			panic(err)
-		}
-		return f
-	})
-	if err != nil {
-		return nil, err
-	}
-	return ret, nil
+func (flux *Influx) CPUFromTo(from, to time.Time, series SeriesConfig) (vector.Vec, error) {
+	panic("NOT IMPLEMENTED")
+	return nil, nil
 }
 
-func (flux *Influx) CPUFromTo(from, to time.Time, series metrics.SeriesConfig) (vector.Vec, error) {
-	var resp, err = flux.Query(
-		influx.NewQuery(
-			fmt.Sprintf("SELECT value FROM %s ORDER BY time DESC WHERE time >= %s and time <= %s",
-				CPU_MEASUREMENTS, from.Format(time.RFC3339), to.Format(time.RFC3339)),
-			flux.dbName,
-			"",
-		),
-	)
+func (flux *Influx) CPUCurrent() (uint64, error) {
+	var result, err = flux.Query("SELECT value FROM cpu_usage_system WHERE time > now()-80s LIMIT 1000")
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	row := resp.Results[0].Series[0]
-	ret := vector.MakeVec(len(row.Values), func(index int) float64 {
-		f, err := row.Values[index][1].(json.Number).Float64()
-		if err != nil {
-			panic(err)
+	var points = result[0].Series[0].Values
+	var average = vector.MakeVec(len(points), func(index int) float64 {
+		switch point := points[index][1].(type) {
+		case int:
+			return float64(point)
+		case float64:
+			return point
+		case json.Number:
+			var x, err = point.Float64()
+			if err != nil {
+				return 0
+			}
+			return x
+		default:
+			fmt.Printf("%T %v\n", point, point)
+			return 0
 		}
-		return f
-	})
-	return ret, nil
+	}).DivideScalar(10000000000).Average()
+	return uint64(average), nil
+}
+
+func (flux *Influx) MemoryCurrent() (uint64, error) {
+	var result, err = flux.Query("SELECT value FROM memory_usage WHERE time > now()-80s LIMIT 1000")
+	if err != nil {
+		return 0, err
+	}
+	var points = result[0].Series[0].Values
+	var average = vector.MakeVec(len(points), func(index int) float64 {
+		switch point := points[index][1].(type) {
+		case int:
+			return float64(point)
+		case float64:
+			return point
+		case json.Number:
+			var x, err = point.Float64()
+			if err != nil {
+				return 0
+			}
+			return x
+		default:
+			fmt.Printf("%T %v\n", point, point)
+			return 0
+		}
+	}).DivideScalar(1000).Average()
+	return uint64(average), nil
 }
