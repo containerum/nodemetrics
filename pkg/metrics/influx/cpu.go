@@ -4,17 +4,25 @@ import (
 	"encoding/json"
 	"log"
 
+	"time"
+
 	"github.com/containerum/nodeMetrics/pkg/vector"
 	"github.com/pkg/errors"
 )
 
 var (
-	ErrEmptyResult   = errors.New("empty result from InfluxDB")
-	ErrNoSeriesFound = errors.New("no series found")
+	ErrEmptyResult            = errors.New("empty result from InfluxDB")
+	ErrNoSeriesFound          = errors.New("no series found")
+	ErrNoValuesFound          = errors.New("no values found")
+	ErrInvalidDataPointFormat = errors.New("invalid data poin format")
+)
+
+const (
+	CPU_COEFF = 1e10
 )
 
 func (flux *Influx) CPUCurrent() (uint64, error) {
-	var result, err = flux.Query("SELECT value FROM cpu_usage_system LIMIT 1000")
+	var result, err = flux.Query("SELECT MEAN(value) FROM cpu_usage_total WHERE time > now()-5m")
 	if err != nil {
 		return 0, err
 	}
@@ -24,8 +32,37 @@ func (flux *Influx) CPUCurrent() (uint64, error) {
 	if len(result[0].Series) < 1 {
 		return 0, ErrNoSeriesFound
 	}
+	if len(result) < 1 {
+		return 0, ErrEmptyResult
+	}
+	if len(result[0].Series) < 1 {
+		return 0, ErrNoSeriesFound
+	}
+	if len(result[0].Series[0].Values) < 1 {
+		return 0, ErrNoValuesFound
+	}
+	if len(result[0].Series[0].Values[0]) < 2 {
+		return 0, ErrInvalidDataPointFormat
+	}
+	var average, _ = result[0].Series[0].Values[0][1].(json.Number).Float64()
+	average /= CPU_COEFF / 4 // TODO: remove hardcoded value
+	return uint64(100 * average), nil
+}
+
+func (flux *Influx) CPUHistory(from, to time.Time, step time.Duration) (vector.Vec, error) {
+	var result, err = flux.Query("SELECT SUM(value) FROM cpu_usage_total WHERE time > %d AND time < %d GROUP BY TIME(%v)", from.UnixNano(), to.UnixNano(), step)
+
+	if err != nil {
+		return nil, err
+	}
+	if len(result) < 1 {
+		return nil, ErrEmptyResult
+	}
+	if len(result[0].Series) < 1 {
+		return nil, ErrNoSeriesFound
+	}
 	var values = result[0].Series[0].Values
-	var average = vector.MakeVec(len(values), func(index int) float64 {
+	var history = vector.MakeVec(len(values), func(index int) float64 {
 		var point = values[index]
 		if len(point) < 2 {
 			log.Panicf("invalid data point in InfluxDB response: expected >= 2 columns, got %q", point)
@@ -44,6 +81,6 @@ func (flux *Influx) CPUCurrent() (uint64, error) {
 		default:
 			return 0
 		}
-	}).DivideScalar(10000000000).Average()
-	return uint64(average), nil
+	}).DivideScalar(CPU_COEFF)
+	return history, nil
 }

@@ -30,6 +30,7 @@ func NewService(config Config) (*Service, error) {
 		FullTimestamp:   true,
 		TimestampFormat: time.RubyDate,
 	})
+	logrus.SetLevel(logrus.DebugLevel)
 	var influxStore, err = influx.NewInflux(influx.Config{
 		Database: config.DB,
 		Addr:     config.InfluxAddr,

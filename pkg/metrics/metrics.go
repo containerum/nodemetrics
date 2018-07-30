@@ -1,6 +1,11 @@
 package metrics
 
-import "github.com/containerum/nodeMetrics/pkg/models"
+import (
+	"time"
+
+	"github.com/containerum/nodeMetrics/pkg/models"
+	"github.com/containerum/nodeMetrics/pkg/vector"
+)
 
 type Metrics interface {
 	CPU
@@ -10,6 +15,7 @@ type Metrics interface {
 
 type CPU interface {
 	CPUCurrent() (uint64, error)
+	CPUHistory(from, to time.Time, step time.Duration) (vector.Vec, error)
 }
 
 type Memory interface {
@@ -18,4 +24,9 @@ type Memory interface {
 
 type Storage interface {
 	StorageCurrent() (models.StorageCurrent, error)
+}
+
+func DefaultHistory() (from, to time.Time, step time.Duration) {
+	var now = time.Now()
+	return now.Add(-12 * time.Hour), now, 15 * time.Minute
 }
