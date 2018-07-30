@@ -5,7 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/containerum/nodeMetrics/pkg/metrics"
 	"github.com/containerum/nodeMetrics/pkg/models"
+)
+
+var (
+	_ metrics.Storage = &Client{}
 )
 
 type Client struct {
@@ -32,7 +37,7 @@ func (client *Client) Report() (models.Report, error) {
 	return report, json.NewDecoder(resp.Body).Decode(&report)
 }
 
-func (client *Client) CurrentStorage() (models.StorageCurrent, error) {
+func (client *Client) StorageCurrent() (models.StorageCurrent, error) {
 	var report, err = client.Report()
 	if err != nil {
 		return models.StorageCurrent{}, err
