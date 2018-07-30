@@ -8,6 +8,7 @@ import (
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/cpu"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/memory"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type Config struct {
@@ -24,7 +25,11 @@ type Service struct {
 }
 
 func NewService(config Config) (*Service, error) {
-
+	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors:     true,
+		FullTimestamp:   true,
+		TimestampFormat: time.RubyDate,
+	})
 	var influxStore, err = influx.NewInflux(influx.Config{
 		Database: config.DB,
 		Addr:     config.InfluxAddr,
@@ -34,7 +39,7 @@ func NewService(config Config) (*Service, error) {
 	}
 	var cadVisor = cadvisor.Mew(config.CadvisorAddr, 60*time.Second)
 
-	var store = struct {
+	var metricsSource = struct {
 		*influx.Influx
 		*cadvisor.Client
 	}{
@@ -43,13 +48,16 @@ func NewService(config Config) (*Service, error) {
 	}
 
 	var server = gin.New()
+	server.Use(gin.ErrorLogger())
+	server.Use(gin.Recovery())
+
 	var CPUmetrics = server.Group("/cpu")
 	{
-		CPUmetrics.GET("/current", cpu.Current(store))
+		CPUmetrics.GET("/current", cpu.Current(metricsSource))
 	}
 	var memoryMetrics = server.Group("/memory")
 	{
-		memoryMetrics.GET("/current", memory.Current(store))
+		memoryMetrics.GET("/current", memory.Current(metricsSource))
 	}
 	return &Service{
 		Engine: server,
