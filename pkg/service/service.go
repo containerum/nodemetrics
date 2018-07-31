@@ -17,6 +17,7 @@ type Config struct {
 	Username     string
 	Password     string
 	DB           string
+	NumCPU       uint64
 }
 
 type Service struct {
@@ -34,6 +35,7 @@ func NewService(config Config) (*Service, error) {
 	var influxStore, err = influx.NewInflux(influx.Config{
 		Database: config.DB,
 		Addr:     config.InfluxAddr,
+		NumCPU:   config.NumCPU,
 	})
 	if err != nil {
 		return nil, err
@@ -55,10 +57,13 @@ func NewService(config Config) (*Service, error) {
 	var CPUmetrics = server.Group("/cpu")
 	{
 		CPUmetrics.GET("/current", cpu.Current(metricsSource))
+		CPUmetrics.GET("/history", cpu.History(metricsSource))
 	}
+
 	var memoryMetrics = server.Group("/memory")
 	{
 		memoryMetrics.GET("/current", memory.Current(metricsSource))
+		memoryMetrics.GET("/history", memory.History(metricsSource))
 	}
 	return &Service{
 		Engine: server,
