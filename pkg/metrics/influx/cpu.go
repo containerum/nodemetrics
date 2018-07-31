@@ -2,12 +2,11 @@ package influx
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
-
 	"time"
 
 	"github.com/containerum/nodeMetrics/pkg/vector"
-	"github.com/pkg/errors"
 )
 
 var (
