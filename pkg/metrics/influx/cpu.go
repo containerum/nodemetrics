@@ -18,7 +18,7 @@ var (
 )
 
 const (
-	CPU_COEFF = 1e10
+	CPU_COEFF = 1e12
 )
 
 func (flux *Influx) CPUCurrent() (uint64, error) {
@@ -45,12 +45,12 @@ func (flux *Influx) CPUCurrent() (uint64, error) {
 		return 0, ErrInvalidDataPointFormat
 	}
 	var average, _ = result[0].Series[0].Values[0][1].(json.Number).Float64()
-	average /= CPU_COEFF / 4 // TODO: remove hardcoded value
-	return uint64(100 * average), nil
+	average /= CPU_COEFF * flux.CPUFactor() // TODO: remove hardcoded value
+	return uint64(average), nil
 }
 
 func (flux *Influx) CPUHistory(from, to time.Time, step time.Duration) (vector.Vec, error) {
-	var result, err = flux.Query("SELECT SUM(value) FROM cpu_usage_total WHERE time > %d AND time < %d GROUP BY TIME(%v)", from.UnixNano(), to.UnixNano(), step)
+	var result, err = flux.Query("SELECT MEAN(value) FROM cpu_usage_total WHERE time > %d AND time < %d GROUP BY TIME(%v)", from.UnixNano(), to.UnixNano(), step)
 
 	if err != nil {
 		return nil, err
@@ -81,6 +81,6 @@ func (flux *Influx) CPUHistory(from, to time.Time, step time.Duration) (vector.V
 		default:
 			return 0
 		}
-	}).DivideScalar(CPU_COEFF)
+	}).DivideScalar(CPU_COEFF * flux.CPUFactor()) // TODO: remove hardcoded value
 	return history, nil
 }

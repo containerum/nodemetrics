@@ -1,10 +1,7 @@
 package influx
 
 import (
-	"time"
-
 	"github.com/containerum/nodeMetrics/pkg/metrics"
-	"github.com/containerum/nodeMetrics/pkg/vector"
 	influx "github.com/influxdata/influxdb/client/v2"
 )
 
@@ -18,6 +15,8 @@ var (
 type Influx struct {
 	dbName string
 	influx.Client
+	numCPU uint64
+	memory uint64
 }
 
 type Config struct {
@@ -25,6 +24,8 @@ type Config struct {
 	Addr     string
 	Username string
 	Password string
+	NumCPU   uint64
+	Memory   uint64
 }
 
 func NewInflux(config Config) (*Influx, error) {
@@ -36,13 +37,24 @@ func NewInflux(config Config) (*Influx, error) {
 	if err != nil {
 		return nil, err
 	}
+	if config.NumCPU == 0 {
+		config.NumCPU = 1
+	}
+	if config.Memory == 0 {
+		config.Memory = 4 * 10 << 10
+	}
 	return &Influx{
 		Client: client,
 		dbName: config.Database,
+		numCPU: config.NumCPU,
+		memory: config.Memory,
 	}, nil
 }
 
-func (flux *Influx) CPUFromTo(from, to time.Time, series SeriesConfig) (vector.Vec, error) {
-	panic("NOT IMPLEMENTED")
-	return nil, nil
+func (flux *Influx) CPUFactor() float64 {
+	return float64(flux.numCPU)
+}
+
+func (flux *Influx) MemoryFactor() float64 {
+	return float64(flux.memory)
 }
