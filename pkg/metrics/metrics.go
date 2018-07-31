@@ -20,6 +20,7 @@ type CPU interface {
 
 type Memory interface {
 	MemoryCurrent() (uint64, error)
+	MemoryHistory(from, to time.Time, step time.Duration) (vector.Vec, error)
 }
 
 type Storage interface {
