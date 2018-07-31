@@ -22,6 +22,7 @@ func main() {
 			DB:           "kubernetes",
 			InfluxAddr:   "http://192.168.88.210:8086",
 			CadvisorAddr: "http://192.168.88.210:31314",
+			NumCPU:       4,
 		},
 	}
 	if err := gflag.ParseToDef(&config); err != nil {
