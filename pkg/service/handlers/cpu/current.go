@@ -3,6 +3,8 @@ package cpu
 import (
 	"net/http"
 
+	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/nodeMetrics/pkg/meterrs"
 	"github.com/containerum/nodeMetrics/pkg/metrics"
 	"github.com/containerum/nodeMetrics/pkg/models"
 	"github.com/gin-gonic/gin"
@@ -19,7 +21,7 @@ func Current(metrics metrics.Metrics) func(ctx *gin.Context) {
 		var cpuMetrics, err = metrics.CPUCurrent()
 		if err != nil {
 			logrus.WithError(err).Errorf("unable to get current CPU metrics")
-			ctx.AbortWithError(http.StatusInternalServerError, err)
+			gonic.Gonic(meterrs.ErrUnableToGetCPUCurrent().AddDetailsErr(err), ctx)
 			return
 		}
 		ctx.JSON(http.StatusOK, models.CPUCurrent{

@@ -1,12 +1,16 @@
 package handlers
 
 import (
-	"net/http"
 	"time"
 
-	"github.com/containerum/nodeMetrics/pkg/models"
+	"github.com/containerum/cherry"
+	"github.com/containerum/nodeMetrics/pkg/meterrs"
 	"github.com/containerum/nodeMetrics/utils/metatime"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	MAX_DATAPOINTS = 1000000
 )
 
 type FromToStep struct {
@@ -14,25 +18,7 @@ type FromToStep struct {
 	Step     time.Duration
 }
 
-type Error struct {
-	Status int
-	models.Error
-}
-
-func ErrorF(status int, msg string, args ...interface{}) *Error {
-	return &Error{
-		Status: status,
-		Error:  *models.ErrorF(msg, args...),
-	}
-}
-
-func (err *Error) ToGin(ctx *gin.Context) {
-	if err != nil {
-		ctx.AbortWithStatusJSON(err.Status, err.Error)
-	}
-}
-
-func ParseFromToStep(ctx *gin.Context) (FromToStep, *Error) {
+func ParseFromToStep(ctx *gin.Context) (FromToStep, *cherry.Err) {
 	var to = time.Now()
 	var from = to.Add(-12 * time.Hour)
 	var step = 15 * time.Minute
@@ -41,7 +27,7 @@ func ParseFromToStep(ctx *gin.Context) (FromToStep, *Error) {
 		var err error
 		from, err = time.Parse(metatime.ISO8601, fromStr)
 		if err != nil {
-			return FromToStep{}, ErrorF(http.StatusBadRequest, "invalid 'from' parameter format: ISO8601 is expected, got %q", fromStr)
+			return FromToStep{}, meterrs.ErrInvalidQueryParameter().AddDetailF("invalid 'from' parameter format: ISO8601 is expected, got %q", fromStr)
 		}
 	}
 
@@ -49,7 +35,7 @@ func ParseFromToStep(ctx *gin.Context) (FromToStep, *Error) {
 		var err error
 		to, err = time.Parse(metatime.ISO8601, toStr)
 		if err != nil {
-			return FromToStep{}, ErrorF(http.StatusBadRequest, "invalid 'to' parameter format: ISO8601 is expected, got %q", toStr)
+			return FromToStep{}, meterrs.ErrInvalidQueryParameter().AddDetailF("invalid 'to' parameter format: ISO8601 is expected, got %q", toStr)
 		}
 	}
 
@@ -57,22 +43,23 @@ func ParseFromToStep(ctx *gin.Context) (FromToStep, *Error) {
 		var err error
 		step, err = time.ParseDuration(stepStr)
 		if err != nil {
-			return FromToStep{}, ErrorF(http.StatusBadRequest, "invalid 'step' parameter format: A duration string is a possibly signed sequence of "+
-				"decimal numbers, each with optional fraction and a unit suffix, "+
-				`such as "300ms", "-1.5h" or "2h45m". `+
+			return FromToStep{}, meterrs.ErrInvalidQueryParameter().AddDetailF("invalid 'step' parameter format: A duration string is a possibly signed sequence of " +
+				"decimal numbers, each with optional fraction and a unit suffix, " +
+				`such as "300ms", "-1.5h" or "2h45m". ` +
 				`Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
 		}
 	}
 
 	if !from.Before(to) {
-		return FromToStep{}, ErrorF(http.StatusBadRequest, "'from' timestamp must be before 'to' timestamp")
+		return FromToStep{}, meterrs.ErrInvalidQueryParameter().AddDetailF("'from' timestamp must be before 'to' timestamp")
 	}
 
 	if step < 10*time.Second {
-		return FromToStep{}, ErrorF(http.StatusBadRequest, "'step' parameter must be > then 10s")
+		return FromToStep{}, meterrs.ErrInvalidQueryParameter().AddDetailF("'step' parameter must be > then 10s")
 	}
-	if to.Sub(from)/step > 1000000 {
-		return FromToStep{}, ErrorF(http.StatusRequestEntityTooLarge, "can't server more then 1000000 data points")
+
+	if to.Sub(from)/step > MAX_DATAPOINTS {
+		return FromToStep{}, meterrs.ErrTooMuchDataPointsToCalculate().AddDetailF("can't server more then %d data points", MAX_DATAPOINTS)
 	}
 
 	return FromToStep{

@@ -3,8 +3,10 @@ package cpu
 import (
 	"net/http"
 
+	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/nodeMetrics/pkg/dataframe"
+	"github.com/containerum/nodeMetrics/pkg/meterrs"
 	"github.com/containerum/nodeMetrics/pkg/metrics"
-	"github.com/containerum/nodeMetrics/pkg/models"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -17,19 +19,20 @@ func History(metrics metrics.Metrics) func(ctx *gin.Context) {
 
 		fromToStep, parsingErr := handlers.ParseFromToStep(ctx)
 		if parsingErr != nil {
-			parsingErr.ToGin(ctx)
+			gonic.Gonic(parsingErr, ctx)
 			return
 		}
-		logrus.Debugf("%+v", fromToStep)
+		logrus.Debugf("%+v %d points", fromToStep, fromToStep.To.Sub(fromToStep.From)/fromToStep.Step)
 		memoryHistory, err := metrics.CPUHistory(fromToStep.From, fromToStep.To, fromToStep.Step)
 		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err)
+			gonic.Gonic(meterrs.ErrUnableToGetCPUCurrent().AddDetailsErr(err), ctx)
 			return
 		}
-
-		ctx.JSON(http.StatusOK, models.MemoryHistory{
-			Units:  "%",
-			Memory: memoryHistory,
-		})
+		logrus.Debugf("writing response")
+		ctx.JSON(http.StatusOK, dataframe.NewFromTicks("%",
+			fromToStep.From,
+			fromToStep.To,
+			fromToStep.Step,
+			memoryHistory))
 	}
 }

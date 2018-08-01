@@ -3,6 +3,8 @@ package memory
 import (
 	"net/http"
 
+	"github.com/containerum/cherry/adaptors/gonic"
+	"github.com/containerum/nodeMetrics/pkg/meterrs"
 	"github.com/containerum/nodeMetrics/pkg/metrics"
 	"github.com/containerum/nodeMetrics/pkg/models"
 	"github.com/gin-gonic/gin"
@@ -16,7 +18,7 @@ func Current(metrics metrics.Metrics) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var cpuMetrics, err = metrics.MemoryCurrent()
 		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err)
+			gonic.Gonic(meterrs.ErrUnableToGetMemoryCurrent().AddDetailsErr(err), ctx)
 			return
 		}
 		ctx.JSON(http.StatusOK, models.CPUCurrent{
