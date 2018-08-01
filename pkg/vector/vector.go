@@ -32,6 +32,14 @@ func (vec Vec) DivideScalar(scalar float64) Vec {
 	return divided
 }
 
+func (vec Vec) MulScalar(scalar float64) Vec {
+	var multiplied = vec.New()
+	for _, x := range vec {
+		multiplied = append(multiplied, x*scalar)
+	}
+	return multiplied
+}
+
 func (vec Vec) Average() float64 {
 	return vec.Sum() / float64(vec.Len())
 }
