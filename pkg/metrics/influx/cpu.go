@@ -3,10 +3,12 @@ package influx
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"time"
 
+	"math"
+
 	"github.com/containerum/nodeMetrics/pkg/vector"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -49,22 +51,27 @@ func (flux *Influx) CPUCurrent() (uint64, error) {
 }
 
 func (flux *Influx) CPUHistory(from, to time.Time, step time.Duration) (vector.Vec, error) {
+	logrus.Debugf("getting CPU history from Influx")
+	defer logrus.Debugf("end")
 	var result, err = flux.Query("SELECT MEAN(value) FROM cpu_usage_total WHERE time > %d AND time < %d GROUP BY TIME(%v)", from.UnixNano(), to.UnixNano(), step)
-
 	if err != nil {
 		return nil, err
 	}
 	if len(result) < 1 {
-		return nil, ErrEmptyResult
+		logrus.Error(ErrEmptyResult)
+		return vector.Vec{}, nil
 	}
 	if len(result[0].Series) < 1 {
-		return nil, ErrNoSeriesFound
+		logrus.Error(ErrNoSeriesFound)
+		return vector.Vec{}, nil
 	}
+	logrus.Debugf("parsing result")
 	var values = result[0].Series[0].Values
 	var history = vector.MakeVec(len(values), func(index int) float64 {
 		var point = values[index]
 		if len(point) < 2 {
-			log.Panicf("invalid data point in InfluxDB response: expected >= 2 columns, got %q", point)
+			logrus.Errorf("invalid data point in InfluxDB response: expected >= 2 columns, got %q", point)
+			return 0
 		}
 		switch point := point[1].(type) {
 		case int:
@@ -80,6 +87,8 @@ func (flux *Influx) CPUHistory(from, to time.Time, step time.Duration) (vector.V
 		default:
 			return 0
 		}
-	}).DivideScalar(CPU_COEFF * flux.CPUFactor()) // TODO: remove hardcoded value
+	}).DivideScalar(CPU_COEFF * flux.CPUFactor()).
+		MulScalar(100).
+		Map(math.Round) // TODO: remove hardcoded value
 	return history, nil
 }

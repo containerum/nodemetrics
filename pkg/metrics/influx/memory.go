@@ -2,10 +2,12 @@ package influx
 
 import (
 	"encoding/json"
-	"log"
 	"time"
 
+	"math"
+
 	"github.com/containerum/nodeMetrics/pkg/vector"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -41,21 +43,27 @@ func (flux *Influx) MemoryCurrent() (uint64, error) {
 }
 
 func (flux *Influx) MemoryHistory(from, to time.Time, step time.Duration) (vector.Vec, error) {
+	logrus.Debugf("getting MEMORY history from Influx")
+	defer logrus.Debugf("end")
 	var result, err = flux.Query("SELECT MEAN(value) FROM memory_usage WHERE time > %d AND time < %d GROUP BY TIME(%v)", from.UnixNano(), to.UnixNano(), step)
 	if err != nil {
 		return nil, err
 	}
 	if len(result) < 1 {
-		return nil, ErrEmptyResult
+		logrus.Error(ErrEmptyResult)
+		return vector.Vec{}, nil
 	}
 	if len(result[0].Series) < 1 {
-		return nil, ErrNoSeriesFound
+		logrus.Error(ErrNoSeriesFound)
+		return vector.Vec{}, nil
 	}
+	logrus.Debugf("parsing result")
 	var values = result[0].Series[0].Values
 	var history = vector.MakeVec(len(values), func(index int) float64 {
 		var point = values[index]
 		if len(point) < 2 {
-			log.Panicf("invalid data point in InfluxDB response: expected >= 2 columns, got %q", point)
+			logrus.Errorf("invalid data point in InfluxDB response: expected >= 2 columns, got %q", point)
+			return 0
 		}
 		switch point := point[1].(type) {
 		case int:
@@ -71,6 +79,8 @@ func (flux *Influx) MemoryHistory(from, to time.Time, step time.Duration) (vecto
 		default:
 			return 0
 		}
-	}).DivideScalar(MEM_COEFF * flux.MemoryFactor()) // TODO: remove hardcoded value
+	}).DivideScalar(MEM_COEFF * flux.MemoryFactor()).
+		MulScalar(100).
+		Map(math.Round) // TODO: remove hardcoded value
 	return history, nil
 }
