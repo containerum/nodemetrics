@@ -14,7 +14,7 @@ const (
 	MEM_COEFF = 1e12
 )
 
-func (flux *Influx) MemoryCurrent() (uint64, error) {
+func (flux *Influx) MemoryCurrent() (float64, error) {
 	var result, err = flux.Query("SELECT MEAN(value) FROM memory_usage WHERE time > now()-5m")
 	if err != nil {
 		return 0, err
@@ -39,7 +39,7 @@ func (flux *Influx) MemoryCurrent() (uint64, error) {
 	}
 	var average, _ = result[0].Series[0].Values[0][1].(json.Number).Float64()
 	average /= MEM_COEFF * flux.MemoryFactor() // TODO: remove hardcoded value
-	return uint64(average), nil
+	return average, nil
 }
 
 func (flux *Influx) MemoryHistory(from, to time.Time, step time.Duration) (vector.Vec, error) {

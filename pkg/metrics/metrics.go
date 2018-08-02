@@ -3,24 +3,24 @@ package metrics
 import (
 	"time"
 
+	"github.com/containerum/nodeMetrics/pkg/dataframe"
 	"github.com/containerum/nodeMetrics/pkg/models"
-	"github.com/containerum/nodeMetrics/pkg/vector"
 )
 
 type Metrics interface {
 	CPU
 	Memory
-	Storage
+	//Storage
 }
 
 type CPU interface {
-	CPUCurrent() (uint64, error)
-	CPUHistory(from, to time.Time, step time.Duration) (vector.Vec, error)
+	CPUCurrent() (float64, error)
+	CPUHistory(from, to time.Time, step time.Duration) (dataframe.Dataframe, error)
 }
 
 type Memory interface {
-	MemoryCurrent() (uint64, error)
-	MemoryHistory(from, to time.Time, step time.Duration) (vector.Vec, error)
+	MemoryCurrent() (float64, error)
+	MemoryHistory(from, to time.Time, step time.Duration) (dataframe.Dataframe, error)
 }
 
 type Storage interface {
@@ -30,4 +30,10 @@ type Storage interface {
 func DefaultHistory() (from, to time.Time, step time.Duration) {
 	var now = time.Now()
 	return now.Add(-12 * time.Hour), now, 15 * time.Minute
+}
+
+type Range struct {
+	From time.Time
+	To   time.Time
+	Step time.Duration
 }
