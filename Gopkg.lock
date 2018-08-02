@@ -72,6 +72,25 @@
   version = "v0.2.0"
 
 [[projects]]
+  digest = "1:83c95df7c0b2ff96a5dcb25bc9eec8a70bea46a94e738d60d151b73b11b0aef3"
+  name = "github.com/prometheus/client_golang"
+  packages = [
+    "api",
+    "api/prometheus/v1",
+  ]
+  pruneopts = "UT"
+  revision = "967789050ba94deca04a5e84cce8ad472ce313c1"
+  version = "v0.9.0-pre1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:644d7e65ea431241ea1b95ae423634da11e6a2776a36f0049b49eac9defb877b"
+  name = "github.com/prometheus/common"
+  packages = ["model"]
+  pruneopts = "UT"
+  revision = "c7de2306084e37d54b8be01f3541a8464345e9a5"
+
+[[projects]]
   digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
@@ -131,6 +150,8 @@
     "github.com/gin-gonic/gin",
     "github.com/influxdata/influxdb/client/v2",
     "github.com/octago/sflags/gen/gflag",
+    "github.com/prometheus/client_golang/api",
+    "github.com/prometheus/client_golang/api/prometheus/v1",
     "github.com/sirupsen/logrus",
   ]
   solver-name = "gps-cdcl"
