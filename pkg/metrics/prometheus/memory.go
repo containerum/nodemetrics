@@ -2,7 +2,6 @@ package prometheus
 
 import (
 	"fmt"
-
 	"math"
 	"time"
 

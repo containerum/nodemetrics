@@ -4,13 +4,12 @@ import (
 	"time"
 
 	"github.com/containerum/nodeMetrics/pkg/dataframe"
-	"github.com/containerum/nodeMetrics/pkg/models"
 )
 
 type Metrics interface {
 	CPU
 	Memory
-	//Storage
+	Storage
 }
 
 type CPU interface {
@@ -24,7 +23,7 @@ type Memory interface {
 }
 
 type Storage interface {
-	StorageCurrent() (models.StorageCurrent, error)
+	StorageCurrent() (float64, error)
 }
 
 func DefaultHistory() (from, to time.Time, step time.Duration) {

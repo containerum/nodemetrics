@@ -7,6 +7,7 @@ import (
 	"github.com/containerum/nodeMetrics/pkg/metrics/prometheus"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/cpu"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/memory"
+	"github.com/containerum/nodeMetrics/pkg/service/handlers/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -52,6 +53,10 @@ func NewService(config Config) (*Service, error) {
 	{
 		memoryMetrics.GET("/current", memory.Current(metricsProvider))
 		memoryMetrics.GET("/history", memory.History(metricsProvider))
+	}
+	var storageMetrics = server.Group("/storage")
+	{
+		storageMetrics.GET("/current", storage.Current(metricsProvider))
 	}
 	return &Service{
 		Engine: server,
