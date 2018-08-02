@@ -1,6 +1,8 @@
 package dataframe
 
 import (
+	"bytes"
+	"fmt"
 	"time"
 
 	"github.com/containerum/nodeMetrics/pkg/vector"
@@ -29,6 +31,15 @@ func (dataframe Dataframe) Len() int {
 	return len(dataframe.Values)
 }
 
+func (dataframe Dataframe) String() string {
+	var buf = &bytes.Buffer{}
+	for i := 0; i < dataframe.Len(); i++ {
+		var label, value = dataframe.Get(i)
+		fmt.Fprintf(buf, "%s : %v%s\n", label, value, dataframe.Units)
+	}
+	return buf.String()
+}
+
 func NewFromTicks(units string, from, to time.Time, step time.Duration, values vector.Vec) Dataframe {
 	var N = to.Sub(from) / step
 	var labels = make([]string, 0, N)
@@ -42,4 +53,18 @@ func NewFromTicks(units string, from, to time.Time, step time.Duration, values v
 		Labels: labels,
 		Values: values.Copy(),
 	}
+}
+
+func MakeDataframe(units string, l int, source func(index int) (string, float64)) Dataframe {
+	var dataframe = Dataframe{
+		Units:  units,
+		Values: make(vector.Vec, 0, l),
+		Labels: make([]string, 0, l),
+	}
+	for index := 0; index < l; index++ {
+		var label, value = source(index)
+		dataframe.Labels = append(dataframe.Labels, label)
+		dataframe.Values = append(dataframe.Values, value)
+	}
+	return dataframe
 }
