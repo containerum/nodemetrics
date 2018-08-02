@@ -21,9 +21,9 @@ func Current(metrics metrics.Metrics) func(ctx *gin.Context) {
 			gonic.Gonic(meterrs.ErrUnableToGetMemoryCurrent().AddDetailsErr(err), ctx)
 			return
 		}
-		ctx.JSON(http.StatusOK, models.CPUCurrent{
-			Units: "Mb",
-			CPU:   cpuMetrics,
+		ctx.JSON(http.StatusOK, models.MemoryCurrent{
+			Units:  "%",
+			Memory: cpuMetrics,
 		})
 	}
 }

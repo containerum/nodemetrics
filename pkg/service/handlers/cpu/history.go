@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/containerum/cherry/adaptors/gonic"
-	"github.com/containerum/nodeMetrics/pkg/dataframe"
 	"github.com/containerum/nodeMetrics/pkg/meterrs"
 	"github.com/containerum/nodeMetrics/pkg/metrics"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers"
@@ -29,10 +28,6 @@ func History(metrics metrics.Metrics) func(ctx *gin.Context) {
 			return
 		}
 		logrus.Debugf("writing response")
-		ctx.JSON(http.StatusOK, dataframe.NewFromTicks("%",
-			fromToStep.From,
-			fromToStep.To,
-			fromToStep.Step,
-			memoryHistory))
+		ctx.JSON(http.StatusOK, memoryHistory)
 	}
 }
