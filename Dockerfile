@@ -19,7 +19,7 @@ ENV USERNAME ""
 ENV PASSWORD ""
 
 CMD /nodeMetrics \
-    -prometheus-addr $SERVING_ADDR \
+    -prometheus-addr $PROMETHEUS_ADDR \
     -serving-addr $SERVING_ADDR \
     -username $USERNAME \
     -password $PASSWORD
