@@ -3,8 +3,8 @@ package service
 import (
 	"time"
 
-	"github.com/containerum/nodeMetrics/pkg/metrics/cadvisor"
-	"github.com/containerum/nodeMetrics/pkg/metrics/influx"
+	"github.com/containerum/nodeMetrics/pkg/metrics"
+	"github.com/containerum/nodeMetrics/pkg/metrics/prometheus"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/cpu"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/memory"
 	"github.com/gin-gonic/gin"
@@ -12,12 +12,14 @@ import (
 )
 
 type Config struct {
-	InfluxAddr   string
-	CadvisorAddr string
-	Username     string
-	Password     string
-	DB           string
-	NumCPU       uint64
+	InfluxAddr     string
+	CadvisorAddr   string
+	PrometheusAddr string
+
+	Username string
+	Password string
+	DB       string
+	NumCPU   uint64
 }
 
 type Service struct {
@@ -32,23 +34,9 @@ func NewService(config Config) (*Service, error) {
 		TimestampFormat: time.RubyDate,
 	})
 	logrus.SetLevel(logrus.DebugLevel)
-	var influxStore, err = influx.NewInflux(influx.Config{
-		Database: config.DB,
-		Addr:     config.InfluxAddr,
-		NumCPU:   config.NumCPU,
+	var metricsProvider metrics.Metrics = prometheus.New(prometheus.Config{
+		Addr: config.PrometheusAddr,
 	})
-	if err != nil {
-		return nil, err
-	}
-	var cadVisor = cadvisor.Mew(config.CadvisorAddr, 60*time.Second)
-
-	var metricsSource = struct {
-		*influx.Influx
-		*cadvisor.Client
-	}{
-		Influx: influxStore,
-		Client: cadVisor,
-	}
 
 	var server = gin.New()
 	server.Use(gin.ErrorLogger())
@@ -56,14 +44,14 @@ func NewService(config Config) (*Service, error) {
 
 	var CPUmetrics = server.Group("/cpu")
 	{
-		CPUmetrics.GET("/current", cpu.Current(metricsSource))
-		CPUmetrics.GET("/history", cpu.History(metricsSource))
+		CPUmetrics.GET("/current", cpu.Current(metricsProvider))
+		CPUmetrics.GET("/history", cpu.History(metricsProvider))
 	}
 
 	var memoryMetrics = server.Group("/memory")
 	{
-		memoryMetrics.GET("/current", memory.Current(metricsSource))
-		memoryMetrics.GET("/history", memory.History(metricsSource))
+		memoryMetrics.GET("/current", memory.Current(metricsProvider))
+		memoryMetrics.GET("/history", memory.History(metricsProvider))
 	}
 	return &Service{
 		Engine: server,
