@@ -1,8 +1,8 @@
 package models
 
 type CPUCurrent struct {
-	Units string `json:"units"`
-	CPU   uint64 `json:"cpu"`
+	Units string  `json:"units"`
+	CPU   float64 `json:"cpu"`
 }
 
 type CPUHistory struct {
