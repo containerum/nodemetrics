@@ -47,12 +47,14 @@ func NewService(config Config) (*Service, error) {
 	{
 		CPUmetrics.GET("/current", cpu.Current(metricsProvider))
 		CPUmetrics.GET("/history", cpu.History(metricsProvider))
+		CPUmetrics.GET("/history/nodes", cpu.NodesHistory(metricsProvider))
 	}
 
 	var memoryMetrics = server.Group("/memory")
 	{
 		memoryMetrics.GET("/current", memory.Current(metricsProvider))
 		memoryMetrics.GET("/history", memory.History(metricsProvider))
+		memoryMetrics.GET("/history/nodes", memory.NodeHistory(metricsProvider))
 	}
 	var storageMetrics = server.Group("/storage")
 	{

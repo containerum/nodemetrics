@@ -36,7 +36,7 @@ func (api *API) CPUHistory(from, to time.Time, step time.Duration) (dataframe.Da
 		From: from,
 		To:   to,
 		Step: step,
-	}, `100 - avg((irate(node_cpu{mode="idle"}[5m])) * 100)`)
+	}, `100 - avg(irate(node_cpu{mode="idle"}[5m]) * 100)`)
 	if err != nil {
 		return dataframe.Dataframe{}, err
 	}
@@ -57,4 +57,33 @@ func (api *API) CPUHistory(from, to time.Time, step time.Duration) (dataframe.Da
 		return dataframe.Dataframe{}, fmt.Errorf("[prometheus.API.CPUHistory] unexpected value type %q", data.Type())
 	}
 	return dataframe.Dataframe{}, nil
+}
+
+func (api *API) CPUNodesHistory(from, to time.Time, step time.Duration) (map[string]dataframe.Dataframe, error) {
+	ret := make(map[string]dataframe.Dataframe, 0)
+	var result, err = api.QueryRange(metrics.Range{
+		From: from,
+		To:   to,
+		Step: step,
+	}, `100 - (avg by (instance) (irate(node_cpu{mode="idle"}[5m])) * 100)`)
+	if err != nil {
+		return ret, err
+	}
+	switch data := result.(type) {
+	case prometheusModel.Matrix:
+		for k := range data {
+			var points = data[k].Values
+			var history = dataframe.MakeDataframe("%", len(points), func(index int) (string, float64) {
+				var point = points[index]
+				var timestamp = point.Timestamp.Time().Format(metatime.ISO8601)
+				var value = math.Round(float64(point.Value))
+				return timestamp, value
+			})
+			ret[string(data[k].Metric["instance"])] = history
+		}
+		return ret, nil
+	default:
+		return ret, fmt.Errorf("[prometheus.API.CPUHistory] unexpected value type %q", data.Type())
+	}
+	return ret, nil
 }

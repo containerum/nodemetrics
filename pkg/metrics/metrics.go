@@ -15,11 +15,13 @@ type Metrics interface {
 type CPU interface {
 	CPUCurrent() (float64, error)
 	CPUHistory(from, to time.Time, step time.Duration) (dataframe.Dataframe, error)
+	CPUNodesHistory(from, to time.Time, step time.Duration) (map[string]dataframe.Dataframe, error)
 }
 
 type Memory interface {
 	MemoryCurrent() (float64, error)
 	MemoryHistory(from, to time.Time, step time.Duration) (dataframe.Dataframe, error)
+	MemoryNodesHistory(from, to time.Time, step time.Duration) (map[string]dataframe.Dataframe, error)
 }
 
 type Storage interface {

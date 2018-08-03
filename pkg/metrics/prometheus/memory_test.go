@@ -29,3 +29,16 @@ func TestAPI_MemoryCurrent(test *testing.T) {
 	}
 	test.Log(current)
 }
+
+func TestAPI_MemoryNodesHistory(test *testing.T) {
+	var client = New(Config{
+		Addr:    "http://192.168.88.210:9090",
+		Timeout: 10 * time.Second,
+	})
+	var now = time.Now()
+	var data, err = client.MemoryNodesHistory(now.Add(-25*time.Minute), now, 10*time.Second)
+	if err != nil {
+		test.Fatal(err)
+	}
+	test.Log(data)
+}
