@@ -1,0 +1,22 @@
+tags:
+  platformdb: false
+
+replicaCount: 1
+
+image:
+  repository: containerum/nodemetrics
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+  secret:
+
+service:
+  port: 8090
+  targetPort: 8090
+  externalIP:
+
+env:
+  global:
+    SERVING_ADDR: ":8090"
+    rbacEnable: true
+  local:
+    PROMETHEUS_ADDR: "http://kube-prometheus:9090"

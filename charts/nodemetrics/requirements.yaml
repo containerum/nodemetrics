@@ -1,0 +1,11 @@
+dependencies:
+- name: prometheus-operator
+  version: "0.0.28"
+  repository: https://charts.containerum.io
+  tags:
+  - monitoring
+- name: kube-prometheus
+  version: "0.0.105"
+  repository: https://charts.containerum.io
+  tags:
+  - monitoring

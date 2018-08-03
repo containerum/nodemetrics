@@ -1,0 +1,45 @@
+Name = "meterrs"
+SID = "nodeMetrics"
+
+[[error]]
+    Name = "UnableToGetCPUCurrent"
+    Message = "unable to get current CPU metrics"
+    Kind = 1
+    StatusHTTP = 500
+
+[[error]]
+    Name = "UnableToGetCPUHistory"
+    Message = "unable to parse CPU history"
+    Kind = 2
+    StatusHTTP = 500
+
+[[error]]
+    Name = "UnableToGetMemoryCurrent"
+    Message = "unable to get current memory metrics"
+    Kind = 3
+    StatusHTTP = 500
+
+[[error]]
+    Name = "UnableToGetMemoryHistory"
+    Message = "unable to get memory history"
+    Kind = 4
+    StatusHTTP = 500
+
+[[error]]
+    Name = "InvalidQueryParameter"
+    Message = "invalid query parameter"
+    Kind = 5
+    StatusHTTP = 400
+
+[[error]]
+    Name = "TooMuchDataPointsToCalculate"
+    Message = "you have requested too much datapoints"
+    Kind = 6
+    StatusHTTP = 400
+
+
+[[error]]
+    Name = "Internal"
+    Message = "unknown internal error"
+    Kind = 7
+    StatusHTTP = 500
