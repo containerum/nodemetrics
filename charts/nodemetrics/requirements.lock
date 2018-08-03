@@ -1,6 +1,9 @@
 dependencies:
-- name: postgresql
-  repository: https://kubernetes-charts.storage.googleapis.com
-  version: 0.12.0
-digest: sha256:dd2c4fa897ed5e14211bdb6b844bef019ced7c61a8af53e4ab3b3be5f065c5bc
-generated: 2018-05-17T15:09:44.550735398+03:00
+- name: prometheus-operator
+  repository: https://charts.containerum.io
+  version: 0.0.28
+- name: kube-prometheus
+  repository: https://charts.containerum.io
+  version: 0.0.105
+digest: sha256:3f6f826e3d939473233d2beddb8c8e12620c7f68aba931ac8e19d6d436d9746a
+generated: 2018-08-03T13:11:49.993515545+03:00
