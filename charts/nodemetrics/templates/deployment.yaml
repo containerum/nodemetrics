@@ -37,5 +37,5 @@ spec:
               value: "{{ .Values.env.local.PROMETHEUS_ADDR }}"
             {{- else }}
             - name: PROMETHEUS_ADDR
-              value: "http://{{ .Release.Name }}-kube-prometheus:9090"
+              value: "http://{{ .Release.Name }}-prometheus:9090"
             {{- end }}
