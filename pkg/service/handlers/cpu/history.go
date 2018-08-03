@@ -12,7 +12,6 @@ import (
 	"github.com/containerum/nodeMetrics/pkg/service/handlers"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,13 +26,13 @@ func History(metrics metrics.Metrics) func(ctx *gin.Context) {
 			return
 		}
 		logrus.Debugf("%+v %d points", fromToStep, fromToStep.To.Sub(fromToStep.From)/fromToStep.Step)
-		memoryHistory, err := metrics.CPUHistory(fromToStep.From, fromToStep.To, fromToStep.Step)
+		cpuHistory, err := metrics.CPUHistory(fromToStep.From, fromToStep.To, fromToStep.Step)
 		if err != nil {
 			gonic.Gonic(meterrs.ErrUnableToGetMemoryHistory().AddDetailsErr(err), ctx)
 			return
 		}
 		logrus.Debugf("writing response")
-		ctx.JSON(http.StatusOK, memoryHistory)
+		ctx.JSON(http.StatusOK, cpuHistory)
 	}
 }
 
@@ -48,13 +47,13 @@ func NodesHistory(metrics metrics.Metrics) func(ctx *gin.Context) {
 			return
 		}
 		logrus.Debugf("%+v %d points", fromToStep, fromToStep.To.Sub(fromToStep.From)/fromToStep.Step)
-		memoryHistory, err := metrics.CPUNodesHistory(fromToStep.From, fromToStep.To, fromToStep.Step)
+		cpuHistory, err := metrics.CPUNodesHistory(fromToStep.From, fromToStep.To, fromToStep.Step)
 		if err != nil {
 			gonic.Gonic(meterrs.ErrUnableToGetCPUHistory().AddDetailsErr(err), ctx)
 			return
 		}
 		logrus.Debugf("writing response")
-		ctx.JSON(http.StatusOK, memoryHistory)
+		ctx.JSON(http.StatusOK, cpuHistory)
 	}
 }
 
@@ -78,20 +77,14 @@ func HistoryWS(metrics metrics.Metrics) func(ctx *gin.Context) {
 		defer c.Close()
 		for {
 			logrus.Debugf("%+v %d points", fromToStep, fromToStep.To.Sub(fromToStep.From)/fromToStep.Step)
-			memoryHistory, err := metrics.CPUHistory(fromToStep.From, fromToStep.To, fromToStep.Step)
+			cpuHistory, err := metrics.CPUHistory(fromToStep.From, fromToStep.To, fromToStep.Step)
 			if err != nil {
 				gonic.Gonic(meterrs.ErrUnableToGetCPUHistory().AddDetailsErr(err), ctx)
 				return
 			}
 			logrus.Debugf("writing response")
 
-			text, err := jsoniter.Marshal(memoryHistory)
-			if err != nil {
-				gonic.Gonic(meterrs.ErrUnableToGetCPUHistory().AddDetailsErr(err), ctx)
-				return
-			}
-
-			err = c.WriteMessage(1, text)
+			err = c.WriteJSON(cpuHistory)
 			if err != nil {
 				log.Println("write:", err)
 				break

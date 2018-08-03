@@ -11,7 +11,6 @@ import (
 	"github.com/containerum/nodeMetrics/pkg/service/handlers"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -84,13 +83,7 @@ func HistoryWS(metrics metrics.Metrics) func(ctx *gin.Context) {
 			}
 			logrus.Debugf("writing response")
 
-			text, _ := jsoniter.Marshal(memoryHistory)
-			if err != nil {
-				gonic.Gonic(meterrs.ErrUnableToGetMemoryHistory().AddDetailsErr(err), ctx)
-				return
-			}
-
-			err = c.WriteMessage(1, text)
+			err = c.WriteJSON(memoryHistory)
 			if err != nil {
 				log.Println("write:", err)
 				break
