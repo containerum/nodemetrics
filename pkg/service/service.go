@@ -48,6 +48,7 @@ func NewService(config Config) (*Service, error) {
 		CPUmetrics.GET("/current", cpu.Current(metricsProvider))
 		CPUmetrics.GET("/history", cpu.History(metricsProvider))
 		CPUmetrics.GET("/history/nodes", cpu.NodesHistory(metricsProvider))
+		CPUmetrics.GET("/history/nodes/ws", cpu.NodesHistoryWS(metricsProvider))
 		CPUmetrics.GET("/history/ws", cpu.HistoryWS(metricsProvider))
 	}
 
@@ -56,6 +57,7 @@ func NewService(config Config) (*Service, error) {
 		memoryMetrics.GET("/current", memory.Current(metricsProvider))
 		memoryMetrics.GET("/history", memory.History(metricsProvider))
 		memoryMetrics.GET("/history/nodes", memory.NodeHistory(metricsProvider))
+		memoryMetrics.GET("/history/nodes/ws", memory.NodesHistoryWS(metricsProvider))
 		memoryMetrics.GET("/history/ws", memory.HistoryWS(metricsProvider))
 	}
 	var storageMetrics = server.Group("/storage")
