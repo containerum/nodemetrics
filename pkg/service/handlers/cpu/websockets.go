@@ -13,6 +13,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const websocketsStep = 2 * time.Minute
+
 var upgrader = websocket.Upgrader{} // use default options
 
 func HistoryWS(metrics metrics.Metrics) func(ctx *gin.Context) {
@@ -23,7 +25,7 @@ func HistoryWS(metrics metrics.Metrics) func(ctx *gin.Context) {
 		fromToStep := handlers.FromToStep{}
 		fromToStep.From = time.Now().Add(-1 * time.Hour)
 		fromToStep.To = time.Now()
-		fromToStep.Step = 1 * time.Minute
+		fromToStep.Step = websocketsStep
 
 		c, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 		if err != nil {
@@ -45,11 +47,10 @@ func HistoryWS(metrics metrics.Metrics) func(ctx *gin.Context) {
 				log.Println("write:", err)
 				break
 			}
-			time.Sleep(1 * time.Minute)
+			time.Sleep(websocketsStep)
 
 			fromToStep.From = time.Now()
 			fromToStep.To = time.Now()
-			fromToStep.Step = 1 * time.Minute
 		}
 	}
 }
@@ -62,7 +63,7 @@ func NodesHistoryWS(metrics metrics.Metrics) func(ctx *gin.Context) {
 		fromToStep := handlers.FromToStep{}
 		fromToStep.From = time.Now().Add(-1 * time.Hour)
 		fromToStep.To = time.Now()
-		fromToStep.Step = 1 * time.Minute
+		fromToStep.Step = websocketsStep
 
 		c, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 		if err != nil {
@@ -84,11 +85,10 @@ func NodesHistoryWS(metrics metrics.Metrics) func(ctx *gin.Context) {
 				log.Println("write:", err)
 				break
 			}
-			time.Sleep(1 * time.Minute)
+			time.Sleep(websocketsStep)
 
 			fromToStep.From = time.Now()
 			fromToStep.To = time.Now()
-			fromToStep.Step = 1 * time.Minute
 		}
 	}
 }
