@@ -43,7 +43,7 @@ func (api *API) MemoryHistory(from, to time.Time, step time.Duration) (dataframe
 	switch data := result.(type) {
 	case prometheusModel.Matrix:
 		if data.Len() < 1 {
-			return dataframe.Dataframe{}, nil
+			return dataframe.MakeDataframe("%", 0, func(index int) (string, float64) { return "", 0 }), nil
 		}
 		var points = data[0].Values
 		var history = dataframe.MakeDataframe("%", len(points), func(index int) (string, float64) {
