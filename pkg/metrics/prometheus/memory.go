@@ -56,11 +56,10 @@ func (api *API) MemoryHistory(from, to time.Time, step time.Duration) (dataframe
 	default:
 		return dataframe.Dataframe{}, fmt.Errorf("[prometheus.API.MemoryHistory] unexpected value type %q", data.Type())
 	}
-	return dataframe.Dataframe{}, nil
 }
 
 func (api *API) MemoryNodesHistory(from, to time.Time, step time.Duration) (map[string]dataframe.Dataframe, error) {
-	ret := make(map[string]dataframe.Dataframe, 0)
+	ret := make(map[string]dataframe.Dataframe)
 	var result, err = api.QueryRange(metrics.Range{
 		From: from,
 		To:   to,
@@ -85,5 +84,4 @@ func (api *API) MemoryNodesHistory(from, to time.Time, step time.Duration) (map[
 	default:
 		return ret, fmt.Errorf("[prometheus.API.MemoryHistory] unexpected value type %q", data.Type())
 	}
-	return ret, nil
 }

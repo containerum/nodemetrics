@@ -56,11 +56,10 @@ func (api *API) CPUHistory(from, to time.Time, step time.Duration) (dataframe.Da
 	default:
 		return dataframe.Dataframe{}, fmt.Errorf("[prometheus.API.CPUHistory] unexpected value type %q", data.Type())
 	}
-	return dataframe.Dataframe{}, nil
 }
 
 func (api *API) CPUNodesHistory(from, to time.Time, step time.Duration) (map[string]dataframe.Dataframe, error) {
-	ret := make(map[string]dataframe.Dataframe, 0)
+	ret := make(map[string]dataframe.Dataframe)
 	var result, err = api.QueryRange(metrics.Range{
 		From: from,
 		To:   to,
@@ -85,5 +84,4 @@ func (api *API) CPUNodesHistory(from, to time.Time, step time.Duration) (map[str
 	default:
 		return ret, fmt.Errorf("[prometheus.API.CPUHistory] unexpected value type %q", data.Type())
 	}
-	return ret, nil
 }
