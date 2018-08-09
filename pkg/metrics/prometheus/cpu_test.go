@@ -29,3 +29,16 @@ func TestAPI_CPUCurrent(test *testing.T) {
 	}
 	test.Log(current)
 }
+
+func TestAPI_CPUNodesHistory(test *testing.T) {
+	var client = New(Config{
+		Addr:    "http://192.168.88.210:9090",
+		Timeout: 10 * time.Second,
+	})
+	var now = time.Now()
+	var data, err = client.CPUNodesHistory(now.Add(-15*time.Minute), now, 10*time.Second)
+	if err != nil {
+		test.Fatal(err)
+	}
+	test.Log(data)
+}
