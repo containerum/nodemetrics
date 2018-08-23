@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	MAX_DATAPOINTS = 1000000
+	maxDataponts = 1000000
 )
 
 type FromToStep struct {
@@ -58,8 +58,8 @@ func ParseFromToStep(ctx *gin.Context) (FromToStep, *cherry.Err) {
 		return FromToStep{}, meterrs.ErrInvalidQueryParameter().AddDetailF("'step' parameter must be > then 10s")
 	}
 
-	if to.Sub(from)/step > MAX_DATAPOINTS {
-		return FromToStep{}, meterrs.ErrTooMuchDataPointsToCalculate().AddDetailF("can't server more then %d data points", MAX_DATAPOINTS)
+	if to.Sub(from)/step > maxDataponts {
+		return FromToStep{}, meterrs.ErrTooMuchDataPointsToCalculate().AddDetailF("can't server more then %d data points", maxDataponts)
 	}
 
 	return FromToStep{

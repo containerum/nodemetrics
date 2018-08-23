@@ -3,11 +3,13 @@ package service
 import (
 	"time"
 
+	"github.com/containerum/kube-client/pkg/model"
 	"github.com/containerum/nodeMetrics/pkg/metrics"
 	"github.com/containerum/nodeMetrics/pkg/metrics/prometheus"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/cpu"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/memory"
 	"github.com/containerum/nodeMetrics/pkg/service/handlers/storage"
+	"github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -20,7 +22,6 @@ type Config struct {
 	Username string
 	Password string
 	DB       string
-	NumCPU   uint64
 }
 
 type Service struct {
@@ -28,7 +29,7 @@ type Service struct {
 	config Config
 }
 
-func NewService(config Config) (*Service, error) {
+func NewService(config Config, status *model.ServiceStatus) (*Service, error) {
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors:     true,
 		FullTimestamp:   true,
@@ -43,22 +44,24 @@ func NewService(config Config) (*Service, error) {
 	server.Use(gin.ErrorLogger())
 	server.Use(gin.Recovery())
 
+	server.GET("/status", httputil.ServiceStatus(status))
+
 	var CPUmetrics = server.Group("/cpu")
 	{
 		CPUmetrics.GET("/current", cpu.Current(metricsProvider))
 		CPUmetrics.GET("/history", cpu.History(metricsProvider))
+		CPUmetrics.GET("/history/ws", cpu.HistoryWS(metricsProvider))
 		CPUmetrics.GET("/history/nodes", cpu.NodesHistory(metricsProvider))
 		CPUmetrics.GET("/history/nodes/ws", cpu.NodesHistoryWS(metricsProvider))
-		CPUmetrics.GET("/history/ws", cpu.HistoryWS(metricsProvider))
 	}
 
 	var memoryMetrics = server.Group("/memory")
 	{
 		memoryMetrics.GET("/current", memory.Current(metricsProvider))
 		memoryMetrics.GET("/history", memory.History(metricsProvider))
+		memoryMetrics.GET("/history/ws", memory.HistoryWS(metricsProvider))
 		memoryMetrics.GET("/history/nodes", memory.NodeHistory(metricsProvider))
 		memoryMetrics.GET("/history/nodes/ws", memory.NodesHistoryWS(metricsProvider))
-		memoryMetrics.GET("/history/ws", memory.HistoryWS(metricsProvider))
 	}
 	var storageMetrics = server.Group("/storage")
 	{
