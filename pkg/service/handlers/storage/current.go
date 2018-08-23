@@ -14,7 +14,7 @@ var (
 	_ gin.HandlerFunc = Current(nil)
 )
 
-func Current(metrics metrics.Metrics) func(ctx *gin.Context) {
+func Current(metrics metrics.Storage) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var storageUsage, err = metrics.StorageCurrent()
 		if err != nil {
