@@ -1,10 +1,11 @@
 FROM golang:1.10-alpine as builder
-COPY . $GOPATH/src/github.com/containerum/nodeMetrics
-WORKDIR $GOPATH/src/github.com/containerum/nodeMetrics
-RUN go build -v -o /nodeMetrics ./cmd/nodeMetrics
+RUN apk add --update make git
+WORKDIR src/github.com/containerum/nodeMetrics
+COPY . .
+RUN VERSION=$(git describe --abbrev=0 --tags) make build-for-docker
 
 FROM alpine:3.8 as runner
-COPY --from=builder /nodeMetrics /nodeMetrics
+COPY --from=builder /tmp/nodeMetrics /
 
 ARG INFLUX_ADDR_ARG="http://localhost:8086"
 ENV INFLUX_ADDR $INFLUX_ADDR_ARG
