@@ -1,5 +1,5 @@
 tags:
-  platformdb: false
+  monitoring: false
 
 replicaCount: 1
 
@@ -19,4 +19,4 @@ env:
     SERVING_ADDR: ":8090"
     rbacEnable: true
   local:
-    PROMETHEUS_ADDR: "http://kube-prometheus:9090"
+    PROMETHEUS_ADDR: "http://prometheus-server:80"

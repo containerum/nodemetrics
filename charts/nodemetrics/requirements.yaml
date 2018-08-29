@@ -1,6 +1,6 @@
 dependencies:
-- name: kube-prometheus
-  version: "1.0.1"
+- name: prometheus
+  version: "1.0.0"
   repository: https://charts.containerum.io
   tags:
   - monitoring
