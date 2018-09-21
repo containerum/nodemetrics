@@ -13,7 +13,7 @@ var (
 )
 
 func (api *API) StorageCurrent() (float64, error) {
-	var result, err = api.Query(`100*(sum(node_filesystem_size{device!="rootfs"}) - sum(node_filesystem_free{device!="rootfs"})) / sum(node_filesystem_size{device!="rootfs"})`)
+	var result, err = api.Query(`100*(sum(node_filesystem_size_bytes{device!="rootfs"}) - sum(node_filesystem_free_bytes{device!="rootfs"})) / sum(node_filesystem_size_bytes{device!="rootfs"})`)
 	if err != nil {
 		return 0, err
 	}
