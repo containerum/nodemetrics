@@ -16,7 +16,7 @@ var (
 )
 
 func (api *API) MemoryCurrent() (float64, error) {
-	var result, err = api.Query(`(node_memory_MemTotal - node_memory_MemFree - node_memory_Buffers- node_memory_Cached)/node_memory_MemTotal`)
+	var result, err = api.Query(`(node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes- node_memory_Cached_bytes)/node_memory_MemTotal_bytes`)
 	if err != nil {
 		return 0, err
 	}
@@ -36,7 +36,7 @@ func (api *API) MemoryHistory(from, to time.Time, step time.Duration) (dataframe
 		From: from,
 		To:   to,
 		Step: step,
-	}, `(node_memory_MemTotal - node_memory_MemFree - node_memory_Buffers- node_memory_Cached)/node_memory_MemTotal`)
+	}, `(node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes)/node_memory_MemTotal_bytes`)
 	if err != nil {
 		return dataframe.Dataframe{}, err
 	}
@@ -64,7 +64,7 @@ func (api *API) MemoryNodesHistory(from, to time.Time, step time.Duration) (map[
 		From: from,
 		To:   to,
 		Step: step,
-	}, `avg by (instance) ((node_memory_MemTotal - node_memory_MemFree - node_memory_Buffers- node_memory_Cached)/node_memory_MemTotal)`)
+	}, `avg by (instance) ((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Buffers_bytes - node_memory_Cached_bytes)/node_memory_MemTotal_bytes)`)
 	if err != nil {
 		return ret, err
 	}

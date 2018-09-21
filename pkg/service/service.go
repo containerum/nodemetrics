@@ -54,7 +54,6 @@ func NewService(config Config, status *model.ServiceStatus) (*Service, error) {
 		CPUmetrics.GET("/history/nodes", cpu.NodesHistory(metricsProvider))
 		CPUmetrics.GET("/history/nodes/ws", cpu.NodesHistoryWS(metricsProvider))
 	}
-
 	var memoryMetrics = server.Group("/memory")
 	{
 		memoryMetrics.GET("/current", memory.Current(metricsProvider))

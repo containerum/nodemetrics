@@ -16,7 +16,7 @@ var (
 )
 
 func (api *API) CPUCurrent() (float64, error) {
-	var result, err = api.Query(`100 - avg((irate(node_cpu{mode="idle"}[5m])) * 100)`)
+	var result, err = api.Query(`100 - avg((irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)`)
 	if err != nil {
 		return 0, err
 	}
@@ -36,7 +36,7 @@ func (api *API) CPUHistory(from, to time.Time, step time.Duration) (dataframe.Da
 		From: from,
 		To:   to,
 		Step: step,
-	}, `100 - avg(irate(node_cpu{mode="idle"}[5m]) * 100)`)
+	}, `100 - avg(irate(node_cpu_seconds_total{mode="idle"}[5m]) * 100)`)
 	if err != nil {
 		return dataframe.Dataframe{}, err
 	}
@@ -64,7 +64,7 @@ func (api *API) CPUNodesHistory(from, to time.Time, step time.Duration) (map[str
 		From: from,
 		To:   to,
 		Step: step,
-	}, `100 - (avg by (instance) (irate(node_cpu{mode="idle"}[5m])) * 100)`)
+	}, `100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)`)
 	if err != nil {
 		return ret, err
 	}
