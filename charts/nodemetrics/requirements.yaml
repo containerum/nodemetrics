@@ -1,6 +1,6 @@
 dependencies:
 - name: prometheus
-  version: "1.0.0"
+  version: "1.0.1"
   repository: https://charts.containerum.io
   tags:
   - monitoring
